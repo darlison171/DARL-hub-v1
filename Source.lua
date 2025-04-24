@@ -2,9 +2,7 @@ local MatsuneA1 = {};
 
 MatsuneA1["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
 MatsuneA1["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
-Instance.new("ScreenGui")
-gui.Name = "DARLhub"
-gui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
 MatsuneA1["2"] = Instance.new("Frame", MatsuneA1["1"]);
 MatsuneA1["2"]["BorderSizePixel"] = 0;
 MatsuneA1["2"]["BackgroundColor3"] = Color3.fromRGB(0, 0, 0);
