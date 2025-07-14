@@ -1,4 +1,4 @@
--- NEXUS HUB: AUTO WINS & AUTO CLICK (com toques lentos)
+-- NEXUS HUB: AUTO WINS (lento) + AUTO CLICK (vazio) - Mobile Friendly
 
 local ScreenGui = Instance.new("ScreenGui")
 local Frame = Instance.new("Frame")
@@ -37,7 +37,7 @@ Subtitle.BackgroundTransparency = 1
 Subtitle.Position = UDim2.new(0, 0, 0, 25)
 Subtitle.Size = UDim2.new(1, 0, 0, 15)
 Subtitle.Font = Enum.Font.Gotham
-Subtitle.Text = "AUTO WINS (lento) & CLICK"
+Subtitle.Text = "AUTO WINS & AUTO CLICK"
 Subtitle.TextColor3 = Color3.fromRGB(0, 255, 127)
 Subtitle.TextSize = 12
 
@@ -52,53 +52,53 @@ Toggle.TextColor3 = Color3.fromRGB(255, 0, 0)
 Toggle.TextSize = 16
 Toggle.BorderSizePixel = 0
 
+-- Variáveis de controle
 local enabled = false
-local winsLoop = false
-local clickLoop = false
+local autoWinsRunning = false
+local autoClickRunning = false
 
 -- AUTO WINS com toques lentos
-local function startAutoWins()
-    winsLoop = true
+local function autoWins()
+    autoWinsRunning = true
     task.spawn(function()
-        while enabled and winsLoop do
+        while enabled and autoWinsRunning do
             local head = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Head")
             if head then
                 for _, v in pairs(workspace:GetDescendants()) do
                     if v:IsA("TouchTransmitter") and v.Parent then
                         firetouchinterest(head, v.Parent, 0)
-                        wait(0.2) -- toque lento
+                        wait(0.2) -- toque suave
                         firetouchinterest(head, v.Parent, 1)
-                        wait(0.2) -- mais pausa
+                        wait(0.2)
                     end
                 end
             end
-            wait(5) -- espera entre ciclos completos
+            wait(0.5)
         end
     end)
 end
 
--- AUTO CLICK básico
-local function startAutoClick()
-    clickLoop = true
+-- AUTO CLICK (vazio, simulação)
+local function autoClick()
+    autoClickRunning = true
     task.spawn(function()
-        while enabled and clickLoop do
-            -- Pode colocar RemoteEvent aqui se quiser
-            wait(0.1) -- clique rápido
+        while enabled and autoClickRunning do
+            wait(0.1) -- simulação de clique (sem ação)
         end
     end)
 end
 
--- Toggle botão
+-- BOTÃO TOGGLE
 Toggle.MouseButton1Click:Connect(function()
     enabled = not enabled
     Toggle.Text = enabled and "ATIVADO" or "DESATIVADO"
     Toggle.TextColor3 = enabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
 
     if enabled then
-        startAutoWins()
-        startAutoClick()
+        autoWins()
+        autoClick()
     else
-        winsLoop = false
-        clickLoop = false
+        autoWinsRunning = false
+        autoClickRunning = false
     end
 end)
