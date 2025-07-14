@@ -79,7 +79,7 @@ Toggle.MouseButton1Click:Connect(function()
                         end
                     end
                 end
-                wait(1) -- intervalo entre execuções
+                wait(5) -- intervalo entre execuções
             end
             running = false
         end)
