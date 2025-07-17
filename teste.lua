@@ -1,50 +1,61 @@
--- 📦 DARLhub - Muscle Legends (com Fluent UI) -- Requer executor KRNL ou similar
+local plr = game:GetService("Players").LocalPlayer
+local rs = game:GetService("ReplicatedStorage")
+local sellPos = CFrame.new(90.08035, 0.98381, 3.02662, 6e-05, 1e-06, 1, -0.0349, 0.999, 1e-06, -0.999, -0.0349, 6e-05)
 
--- 🧱 Carrega Fluent UI 
-local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/x2Swiftz/UI-Library/main/Libraries/FluentUI-Example.lua"))()
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.ResetOnSpawn = false
 
-local window = Fluent:CreateWindow({ Title = "💪 DARLhub | Muscle Legends", SubTitle = "By Darlison", TabWidth = 160, Size = UDim2.fromOffset(600, 400), Theme = "Dark" })
+local f = Instance.new("Frame", gui)
+f.Size = UDim2.fromOffset(160, 110)
+f.Position = UDim2.new(0.5, -80, 0.6, -55)
+f.BackgroundColor3 = Color3.fromRGB(235, 64, 52)
+f.Active, f.Draggable = true, true
+Instance.new("UICorner", f).CornerRadius = UDim.new(0, 10)
 
--- 🌟 Variáveis Globais
-local vezesBug = 150 local delayBug = 0.05 local autoFarm = false local autoRebirth = false local autoEquip = false local autoOrb = false local xpAtual = 0 local maxXP = 250 local glitchNotificado = false
+local lbl = Instance.new("TextLabel", f)
+lbl.Size = UDim2.new(1, 0, 0.25, 0)
+lbl.BackgroundTransparency = 1
+lbl.Text = "nexus hub"
+lbl.TextColor3 = Color3.new(1, 1, 1)
+lbl.Font = Enum.Font.GothamBold
+lbl.TextScaled = true
 
--- 🔁 Loops de funcionalidades 
-spawn(function() while true do if autoFarm then game:GetService("ReplicatedStorage").Events.Train:FireServer("Bench Press") end wait(0.2) end end)
+local function makeButton(text, y)
+  local b = Instance.new("TextButton", f)
+  b.Size = UDim2.new(0.85, 0, 0.3, 0)
+  b.Position = UDim2.new(0.075, 0, y, 0)
+  b.BackgroundColor3 = Color3.fromRGB(255, 214, 10)
+  b.Text = text
+  b.TextColor3 = Color3.new(0, 0, 0)
+  b.Font = Enum.Font.GothamSemibold
+  b.TextScaled = true
+  Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+  return b
+end
 
-spawn(function() while true do if autoRebirth then game:GetService("ReplicatedStorage").Events.Rebirth:FireServer() end wait(1) end end)
+local btnAll = makeButton("Sell Inventory", 0.35)
+local btnHand = makeButton("Sell item in hand", 0.68)
 
-spawn(function() while true do if autoEquip then game:GetService("ReplicatedStorage").Events.EquipPet:FireServer("Orange Hedgehog") end wait(2) end end)
+btnAll.MouseButton1Click:Connect(function()
+  local hrp = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
+  if hrp then
+    local orig = hrp.CFrame
+    hrp.CFrame = sellPos
+    task.wait(0.1)
+    rs.GameEvents.Sell_Inventory:FireServer()
+    task.wait(0.1)
+    hrp.CFrame = orig
+  end
+end)
 
-spawn(function() while true do if autoOrb then for _, v in pairs(workspace.Orbs:GetChildren()) do if v:IsA("Model") and v:FindFirstChild("TouchInterest") then firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, v, 0) wait() firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart, v, 1) end end end wait(1.5) end end)
-
-spawn(function() while true do xpAtual += 1 if xpAtual >= maxXP - 1 and not glitchNotificado then glitchNotificado = true Fluent:Notify({Title = "🔥 Glitch Pronto", Content = "Seu pet está quase upando!", Duration = 5}) end wait(1.2) end end)
-
--- 🐾 Aba Pets 
-local tabPets = window:AddTab({Title = "🐾 Pets"})
-
-local petSection = tabPets:AddSection("Orange Hedgehog") petSection:AddSlider("Repetições do Glitch", {Min = 10, Max = 300, Default = vezesBug}, function(v) vezesBug = v end)
-
-petSection:AddSlider("Delay entre Equips", {Min = 0.01, Max = 0.3, Default = delayBug}, function(v) delayBug = v end)
-
-petSection:AddButton("🔥 Bugar Pet", function() local rs = game:GetService("ReplicatedStorage") local equip = rs:WaitForChild("Events"):WaitForChild("EquipPet") local unequip = rs:WaitForChild("Events"):WaitForChild("UnequipPet") for i = 1, vezesBug do unequip:FireServer("Orange Hedgehog") wait(delayBug) equip:FireServer("Orange Hedgehog") wait(delayBug) end Fluent:Notify({Title = "✅ Concluído", Content = "Boost aplicado."}) end)
-
--- 💪 Aba de Farm local 
-tabFarm = window:AddTab({Title = "💪 Farm"})
-
-local farmSection = tabFarm:AddSection("Auto Farm") farmSection:AddToggle("Ativar Auto Farm", autoFarm, function(v) autoFarm = v end)
-
-farmSection:AddToggle("Auto Rebirth", autoRebirth, function(v) autoRebirth = v end)
-
-farmSection:AddToggle("Auto Equipar Ouriço", autoEquip, function(v) autoEquip = v end)
-
-farmSection:AddToggle("Auto Coletar Orbs", autoOrb, function(v) autoOrb = v end)
-
--- 🔔 Aba XP local 
-tabGlitch = window:AddTab({Title = "🔔 Glitch"}) local glitchSection = tabGlitch:AddSection("Monitor XP")
-
-glitchSection:AddSlider("XP Máximo Simulado", {Min = 100, Max = 500, Default = maxXP}, function(v) maxXP = v end)
-
-glitchSection:AddButton("Resetar XP Simulado", function() xpAtual = 0 glitchNotificado = false Fluent:Notify({Title = "Resetado", Content = "XP zerado"}) end)
-
--- ❌ Fechar local 
-tabFechar = window:AddTab({Title = "❌ Fechar"}) tabFechar:AddButton("Fechar UI", function() window:Close() end)
+btnHand.MouseButton1Click:Connect(function()
+  local hrp = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
+  if hrp then
+    local orig = hrp.CFrame
+    hrp.CFrame = sellPos
+    task.wait(0.1)
+    rs.GameEvents.Sell_Item:FireServer()
+    task.wait(0.1)
+    hrp.CFrame = orig
+  end
+end)
