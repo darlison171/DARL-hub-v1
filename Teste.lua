@@ -1,68 +1,71 @@
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+
 local Window = Fluent:CreateWindow({
-    Title = "DARLhub | Grow A Garden",
-    SubTitle = "Auto Farming integrado",
+    Title = "Grow Garden Hub 🌱",
+    SubTitle = "by Darlison",
     TabWidth = 160,
-    Size = UDim2.fromOffset(520, 380),
+    Size = UDim2.fromOffset(530, 400),
     Acrylic = true,
     Theme = "Dark",
-    MinimizeKey = Enum.KeyCode.RightControl,
-    Logo = "rbxassetid://138540238455802"
+    MinimizeKey = Enum.KeyCode.LeftControl
 })
 
-local GrowTab = Window:AddTab({ Title = "Garden", Icon = "🌱" })
+local Tab = Window:AddTab({ Title = "Auto Farm", Icon = "🌾" })
 
--- Toggle Auto Plant & Harvest
-GrowTab:AddToggle("Auto Plant & Harvest", { Default = false }, function(v)
-    _G.AutoGH = v
-    if v then
-        spawn(function()
-            while _G.AutoGH do
-                task.wait(0.5)
-                pcall(function()
-                    -- Script de auto farm básico (nootmaus)
-                    loadstring(game:HttpGet("https://raw.githubusercontent.com/nootmaus/GrowAAGarden/refs/heads/main/mauscripts"))()
-                end)
+Tab:AddToggle({
+    Title = "Auto Plantar",
+    Default = false,
+    Callback = function(value)
+        getgenv().autoPlant = value
+        while autoPlant and task.wait() do
+            -- comando de plantio
+        end
+    end
+})
+
+Tab:AddToggle({
+    Title = "Auto Rega",
+    Default = false,
+    Callback = function(value)
+        getgenv().autoWater = value
+        while autoWater and task.wait() do
+            -- comando de regar
+        end
+    end
+})
+
+Tab:AddToggle({
+    Title = "Auto Colher",
+    Default = false,
+    Callback = function(value)
+        getgenv().autoHarvest = value
+        while autoHarvest and task.wait() do
+            -- comando de colher
+        end
+    end
+})
+
+local Tab2 = Window:AddTab({ Title = "Extras", Icon = "⚙️" })
+
+Tab2:AddSlider({
+    Title = "Velocidade do Jogador",
+    Description = "Aumente a velocidade!",
+    Default = 16,
+    Min = 16,
+    Max = 100,
+    Callback = function(v)
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = v
+    end
+})
+
+Tab2:AddButton({
+    Title = "Desativar Gráficos (NoLag)",
+    Callback = function()
+        settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v:IsA("ParticleEmitter") or v:IsA("Trail") then
+                v.Enabled = false
             end
-        end)
+        end
     end
-end)
-
--- Toggle Auto Plant, Harvest e Vender
-GrowTab:AddToggle("Auto Farm + Sell", { Default = false }, function(v)
-    _G.AutoGHSell = v
-    if v then
-        spawn(function()
-            while _G.AutoGHSell do
-                task.wait(0.5)
-                pcall(function()
-                    -- Script depthso autofarm
-                    loadstring(game:HttpGet("https://raw.githubusercontent.com/depthso/Grow-a-Garden/refs/heads/main/autofarm.lua"))()
-                end)
-            end
-        end)
-    end
-end)
-
--- Toggle Semente Infinita
-GrowTab:AddToggle("Inf Seeds", { Default = false }, function(v)
-    _G.InfSeeds = v
-    if v then
-        game:GetService("Players").LocalPlayer.PlayerGui:ClearAllChildren()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/checkurasshole/Script/refs/heads/main/IQ"))()
-    end
-end)
-
--- Botão Teleporte Pro Garden
-GrowTab:AddButton("Teleport to Garden", function()
-    local plr = game.Players.LocalPlayer
-    plr.Character:MoveTo(Vector3.new(0, 5, 0))  -- ajuste posição conforme o mapa
-    Fluent:Notify({ Title="DARLhub", Content="Teleport realizado!" })
-end)
-
-Fluent:Notify({
-    Title="DARLhub",
-    Content="Grow A Garden integrado!",
-    SubContent="Ative as funções na aba 'Garden'",
-    Duration=6
 })
