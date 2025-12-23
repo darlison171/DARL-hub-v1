@@ -11,8 +11,8 @@ local player = Players.LocalPlayer
 
 local Whitelist = {
     player.UserId, -- você (não remove)
-    -- 123456789, -- exemplo
-    -- 987654321  -- exemplo
+    -- 7791085793,
+    -- 987654321
 }
 
 local function IsWhitelisted(id)
