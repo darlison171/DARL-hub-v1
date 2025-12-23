@@ -1,44 +1,14 @@
 --==================================================
 -- TLD HUB | Muscle Legends
--- Fluent UI | Universal Executor
--- Auto Farm Seguro (sem bug pet)
--- Com verificação por UserId
+-- UI Própria | Delta Safe | Sem Whitelist
 --==================================================
 
--- ===== WHITELIST POR USERID =====
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
-local Whitelist = {
-    player.UserId, -- você (não remove)
-    -- 7791085793,
-    -- 987654321
-}
-
-local function IsWhitelisted(id)
-    for _,v in pairs(Whitelist) do
-        if v == id then
-            return true
-        end
-    end
-    return false
-end
-
-if not IsWhitelisted(player.UserId) then
-    player:Kick("⛔ Acesso negado | TLD HUB")
-    return
-end
-
--- ===== LOAD FLUENT UI =====
-local Fluent = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/dawid-scripts/Fluent/master/main.lua"
-))()
-
 -- ===== SERVICES =====
+local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
 local WS = game:GetService("Workspace")
+local player = Players.LocalPlayer
 
--- ===== PLAYER =====
 local char = player.Character or player.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
 
@@ -51,79 +21,66 @@ local Flags = {
     Rebirth = false
 }
 
--- ===== WINDOW =====
-local Window = Fluent:CreateWindow({
-    Title = "💪 TLD HUB | Muscle Legends",
-    SubTitle = "Auto Farm Seguro • Fluent UI",
-    TabWidth = 160,
-    Size = UDim2.fromOffset(520, 420),
-    Theme = "Dark"
-})
+-- ===== UI =====
+local gui = Instance.new("ScreenGui")
+gui.Name = "TLDHub"
+gui.Parent = game.CoreGui
 
-local FarmTab = Window:AddTab({ Title = "Farm", Icon = "swords" })
-local MiscTab = Window:AddTab({ Title = "Info", Icon = "info" })
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.fromScale(0.45, 0.55)
+main.Position = UDim2.fromScale(0.275, 0.22)
+main.BackgroundColor3 = Color3.fromRGB(18,18,18)
+main.Active = true
+main.Draggable = true
+Instance.new("UICorner", main).CornerRadius = UDim.new(0,14)
 
--- ===== TOGGLES =====
-FarmTab:AddToggle("AutoStrength", {
-    Title = "Auto Strength",
-    Callback = function(v)
-        Flags.Strength = v
-    end
-})
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.fromScale(1, 0.12)
+title.BackgroundTransparency = 1
+title.Text = "💪 TLD HUB | Muscle Legends"
+title.TextScaled = true
+title.Font = Enum.Font.GothamBold
+title.TextColor3 = Color3.fromRGB(255,255,255)
 
-FarmTab:AddToggle("AutoAgility", {
-    Title = "Auto Agility",
-    Callback = function(v)
-        Flags.Agility = v
-    end
-})
+local function Toggle(text, posY, flagName)
+    local btn = Instance.new("TextButton", main)
+    btn.Size = UDim2.fromScale(0.9, 0.11)
+    btn.Position = UDim2.fromScale(0.05, posY)
+    btn.Text = text .. " : OFF"
+    btn.TextScaled = true
+    btn.Font = Enum.Font.Gotham
+    btn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+    btn.TextColor3 = Color3.fromRGB(255,255,255)
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0,10)
 
-FarmTab:AddToggle("AutoDurability", {
-    Title = "Auto Durability",
-    Callback = function(v)
-        Flags.Durability = v
-    end
-})
+    btn.MouseButton1Click:Connect(function()
+        Flags[flagName] = not Flags[flagName]
+        btn.Text = text .. (Flags[flagName] and " : ON" or " : OFF")
+        btn.BackgroundColor3 = Flags[flagName]
+            and Color3.fromRGB(50,120,60)
+            or Color3.fromRGB(35,35,35)
+    end)
+end
 
-FarmTab:AddToggle("AutoRock", {
-    Title = "Auto Rock",
-    Callback = function(v)
-        Flags.Rock = v
-    end
-})
+Toggle("Auto Strength", 0.15, "Strength")
+Toggle("Auto Agility", 0.28, "Agility")
+Toggle("Auto Durability", 0.41, "Durability")
+Toggle("Auto Rock", 0.54, "Rock")
+Toggle("Auto Rebirth", 0.67, "Rebirth")
 
-FarmTab:AddToggle("AutoRebirth", {
-    Title = "Auto Rebirth (Normal)",
-    Callback = function(v)
-        Flags.Rebirth = v
-    end
-})
-
--- ===== AUTO STRENGTH =====
+-- ===== AUTO TRAIN =====
 task.spawn(function()
-    while task.wait(0.15) do
+    while task.wait(0.18) do
         if Flags.Strength then
             pcall(function()
                 RS.Remotes.Train:FireServer("Strength")
             end)
         end
-    end
-end)
-
--- ===== AUTO AGILITY =====
-task.spawn(function()
-    while task.wait(0.2) do
         if Flags.Agility then
             pcall(function()
                 RS.Remotes.Train:FireServer("Agility")
             end)
         end
-    end
-end)
-
--- ===== AUTO DURABILITY =====
-task.spawn(function()
-    while task.wait(0.2) do
         if Flags.Durability then
             pcall(function()
                 RS.Remotes.Train:FireServer("Durability")
@@ -133,29 +90,23 @@ task.spawn(function()
 end)
 
 -- ===== AUTO ROCK =====
-local function GetRock()
-    for _,v in pairs(WS:GetDescendants()) do
-        if v:IsA("BasePart") and v.Name:lower():find("rock") then
-            return v
-        end
-    end
-end
-
 task.spawn(function()
-    while task.wait(0.2) do
+    while task.wait(0.25) do
         if Flags.Rock then
-            local rock = GetRock()
-            if rock then
-                hrp.CFrame = rock.CFrame * CFrame.new(0,0,-3)
-                pcall(function()
-                    RS.Remotes.Train:FireServer("Strength")
-                end)
+            for _,v in pairs(WS:GetDescendants()) do
+                if v:IsA("BasePart") and v.Name:lower():find("rock") then
+                    hrp.CFrame = v.CFrame * CFrame.new(0,0,-3)
+                    pcall(function()
+                        RS.Remotes.Train:FireServer("Strength")
+                    end)
+                    break
+                end
             end
         end
     end
 end)
 
--- ===== AUTO REBIRTH (SEGURO) =====
+-- ===== AUTO REBIRTH (NORMAL) =====
 task.spawn(function()
     while task.wait(3) do
         if Flags.Rebirth then
@@ -165,12 +116,3 @@ task.spawn(function()
         end
     end
 end)
-
--- ===== INFO =====
-MiscTab:AddParagraph({
-    Title = "TLD HUB",
-    Content =
-        "✔ Script baseado no funcionamento real do Muscle Legends\n" ..
-})
-
-Window:SelectTab(1)
