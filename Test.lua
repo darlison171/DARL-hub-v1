@@ -1,5 +1,527 @@
 --[[
-    Muscle Masters Professional Hub
+    Muscle Masters Professional Hub--[[
+    MUSCLE LEGENDS HUB - Delta Mobile Version
+    Versão: 1.0 Mobile
+    Autor: Desenvolvimento Profissional
+    Otimizado para tela de celular
+]]
+
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+
+-- Variáveis
+local hubVisible = true
+local currentTab = "Main"
+local settings = {
+    autoTrain = false,
+    autoCollect = false,
+    autoSell = false,
+    infiniteJump = false,
+    walkSpeed = 16,
+    jumpPower = 50,
+    eggsAmount = 10
+}
+
+-- Cores
+local colors = {
+    bg = Color3.fromRGB(20, 20, 30),
+    surface = Color3.fromRGB(30, 30, 40),
+    primary = Color3.fromRGB(0, 160, 255),
+    text = Color3.fromRGB(255, 255, 255),
+    success = Color3.fromRGB(0, 200, 0),
+    danger = Color3.fromRGB(255, 50, 50)
+}
+
+-- Criar UI principal
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MuscleLegendsHub"
+screenGui.Parent = game:GetService("CoreGui")
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- Frame Principal (Tamanho adaptado para mobile)
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 350, 0, 600) -- Mais fino e comprido para mobile
+mainFrame.Position = UDim2.new(0.5, -175, 0.5, -300)
+mainFrame.BackgroundColor3 = colors.bg
+mainFrame.BackgroundTransparency = 0.1
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+-- Cantos arredondados
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = mainFrame
+
+-- Barra Superior (maior para mobile)
+local topBar = Instance.new("Frame")
+topBar.Size = UDim2.new(1, 0, 0, 45)
+topBar.BackgroundColor3 = colors.surface
+topBar.BackgroundTransparency = 0.2
+topBar.BorderSizePixel = 0
+topBar.Parent = mainFrame
+
+local topCorner = Instance.new("UICorner")
+topCorner.CornerRadius = UDim.new(0, 12)
+topCorner.Parent = topBar
+
+-- Título
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(0, 200, 1, 0)
+title.Position = UDim2.new(0, 15, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "💪 MUSCLE HUB"
+title.TextColor3 = colors.primary
+title.TextScaled = true
+title.Font = Enum.Font.GothamBold
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = topBar
+
+-- Botões da barra (maiores para toque)
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 40, 0, 40)
+closeBtn.Position = UDim2.new(1, -45, 0.5, -20)
+closeBtn.BackgroundColor3 = colors.danger
+closeBtn.BackgroundTransparency = 0.2
+closeBtn.Text = "X"
+closeBtn.TextColor3 = colors.text
+closeBtn.TextScaled = true
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.BorderSizePixel = 0
+closeBtn.Parent = topBar
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 8)
+closeCorner.Parent = closeBtn
+
+-- Botão Minimizar
+local minBtn = Instance.new("TextButton")
+minBtn.Size = UDim2.new(0, 40, 0, 40)
+minBtn.Position = UDim2.new(1, -90, 0.5, -20)
+minBtn.BackgroundColor3 = colors.surface
+minBtn.BackgroundTransparency = 0.2
+minBtn.Text = "—"
+minBtn.TextColor3 = colors.text
+minBtn.TextScaled = true
+minBtn.Font = Enum.Font.GothamBold
+minBtn.BorderSizePixel = 0
+minBtn.Parent = topBar
+
+local minCorner = Instance.new("UICorner")
+minCorner.CornerRadius = UDim.new(0, 8)
+minCorner.Parent = minBtn
+
+-- Abas (roláveis horizontalmente para mobile)
+local tabContainer = Instance.new("Frame")
+tabContainer.Size = UDim2.new(1, 0, 0, 50)
+tabContainer.Position = UDim2.new(0, 0, 0, 45)
+tabContainer.BackgroundColor3 = colors.surface
+tabContainer.BackgroundTransparency = 0.2
+tabContainer.BorderSizePixel = 0
+tabContainer.Parent = mainFrame
+
+local tabList = Instance.new("ScrollingFrame")
+tabList.Size = UDim2.new(1, 0, 1, 0)
+tabList.BackgroundTransparency = 1
+tabList.BorderSizePixel = 0
+tabList.ScrollBarThickness = 0
+tabList.CanvasSize = UDim2.new(2, 0, 0, 0)
+tabList.Parent = tabContainer
+
+local tabs = {"Main", "Player", "Pets", "Teleport", "Settings"}
+local tabButtons = {}
+
+for i, tabName in ipairs(tabs) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 100, 0, 40)
+    btn.Position = UDim2.new(0, 10 + (i-1) * 110, 0, 5)
+    btn.BackgroundColor3 = i == 1 and colors.primary or colors.bg
+    btn.BackgroundTransparency = 0.2
+    btn.Text = tabName
+    btn.TextColor3 = colors.text
+    btn.TextScaled = true
+    btn.Font = Enum.Font.GothamBold
+    btn.BorderSizePixel = 0
+    btn.Parent = tabList
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 8)
+    btnCorner.Parent = btn
+    
+    btn.MouseButton1Click:Connect(function()
+        currentTab = tabName
+        for _, b in pairs(tabButtons) do
+            b.BackgroundColor3 = colors.bg
+        end
+        btn.BackgroundColor3 = colors.primary
+        updateContent()
+    end)
+    
+    table.insert(tabButtons, btn)
+end
+
+-- Área de Conteúdo (rolável para mobile)
+local contentContainer = Instance.new("Frame")
+contentContainer.Size = UDim2.new(1, -10, 1, -115)
+contentContainer.Position = UDim2.new(0, 5, 0, 100)
+contentContainer.BackgroundColor3 = colors.surface
+contentContainer.BackgroundTransparency = 0.3
+contentContainer.BorderSizePixel = 0
+contentContainer.ClipsDescendants = true
+contentContainer.Parent = mainFrame
+
+local contentCorner = Instance.new("UICorner")
+contentCorner.CornerRadius = UDim.new(0, 12)
+contentCorner.Parent = contentContainer
+
+local contentFrame = Instance.new("ScrollingFrame")
+contentFrame.Size = UDim2.new(1, 0, 1, 0)
+contentFrame.BackgroundTransparency = 1
+contentFrame.BorderSizePixel = 0
+contentFrame.ScrollBarThickness = 4
+contentFrame.ScrollBarImageColor3 = colors.primary
+contentFrame.CanvasSize = UDim2.new(0, 0, 2, 0)
+contentFrame.Parent = contentContainer
+
+-- Funções auxiliares (adaptadas para mobile)
+function createToggle(parent, text, yPos, setting)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, -20, 0, 55) -- Mais alto para toque
+    frame.Position = UDim2.new(0, 10, 0, yPos)
+    frame.BackgroundColor3 = colors.bg
+    frame.BackgroundTransparency = 0.3
+    frame.BorderSizePixel = 0
+    frame.Parent = parent
+    
+    local frameCorner = Instance.new("UICorner")
+    frameCorner.CornerRadius = UDim.new(0, 8)
+    frameCorner.Parent = frame
+    
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0, 150, 1, 0)
+    label.Position = UDim2.new(0, 15, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = colors.text
+    label.TextScaled = true
+    label.Font = Enum.Font.Gotham
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = frame
+    
+    local toggleBtn = Instance.new("TextButton")
+    toggleBtn.Size = UDim2.new(0, 80, 0, 40) -- Botão maior
+    toggleBtn.Position = UDim2.new(1, -90, 0.5, -20)
+    toggleBtn.BackgroundColor3 = settings[setting] and colors.success or colors.danger
+    toggleBtn.BackgroundTransparency = 0.2
+    toggleBtn.Text = settings[setting] and "ON" or "OFF"
+    toggleBtn.TextColor3 = colors.text
+    toggleBtn.TextScaled = true
+    toggleBtn.Font = Enum.Font.GothamBold
+    toggleBtn.BorderSizePixel = 0
+    toggleBtn.Parent = frame
+    
+    local toggleCorner = Instance.new("UICorner")
+    toggleCorner.CornerRadius = UDim.new(0, 8)
+    toggleCorner.Parent = toggleBtn
+    
+    toggleBtn.MouseButton1Click:Connect(function()
+        settings[setting] = not settings[setting]
+        toggleBtn.BackgroundColor3 = settings[setting] and colors.success or colors.danger
+        toggleBtn.Text = settings[setting] and "ON" or "OFF"
+    end)
+end
+
+function createButton(parent, text, yPos, color, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -20, 0, 55) -- Botão maior
+    btn.Position = UDim2.new(0, 10, 0, yPos)
+    btn.BackgroundColor3 = color
+    btn.BackgroundTransparency = 0.2
+    btn.Text = text
+    btn.TextColor3 = colors.text
+    btn.TextScaled = true
+    btn.Font = Enum.Font.GothamBold
+    btn.BorderSizePixel = 0
+    btn.Parent = parent
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 8)
+    btnCorner.Parent = btn
+    
+    btn.MouseButton1Click:Connect(callback)
+end
+
+function createTextBox(parent, text, yPos, setting)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, -20, 0, 70)
+    frame.Position = UDim2.new(0, 10, 0, yPos)
+    frame.BackgroundColor3 = colors.bg
+    frame.BackgroundTransparency = 0.3
+    frame.BorderSizePixel = 0
+    frame.Parent = parent
+    
+    local frameCorner = Instance.new("UICorner")
+    frameCorner.CornerRadius = UDim.new(0, 8)
+    frameCorner.Parent = frame
+    
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -20, 0, 25)
+    label.Position = UDim2.new(0, 10, 0, 5)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = colors.text
+    label.TextScaled = true
+    label.Font = Enum.Font.Gotham
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = frame
+    
+    local textBox = Instance.new("TextBox")
+    textBox.Size = UDim2.new(1, -20, 0, 35)
+    textBox.Position = UDim2.new(0, 10, 0, 30)
+    textBox.BackgroundColor3 = colors.surface
+    textBox.BackgroundTransparency = 0.2
+    textBox.Text = tostring(settings[setting])
+    textBox.TextColor3 = colors.text
+    textBox.TextScaled = true
+    textBox.Font = Enum.Font.Gotham
+    textBox.PlaceholderText = "Digite um valor"
+    textBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+    textBox.BorderSizePixel = 0
+    textBox.Parent = frame
+    
+    local boxCorner = Instance.new("UICorner")
+    boxCorner.CornerRadius = UDim.new(0, 6)
+    boxCorner.Parent = textBox
+    
+    textBox.FocusLost:Connect(function()
+        local amount = tonumber(textBox.Text)
+        if amount and amount > 0 then
+            settings[setting] = math.floor(amount)
+        else
+            textBox.Text = tostring(settings[setting])
+        end
+    end)
+end
+
+-- Função para atualizar conteúdo
+function updateContent()
+    for _, child in ipairs(contentFrame:GetChildren()) do
+        child:Destroy()
+    end
+    
+    local yPos = 10
+    
+    if currentTab == "Main" then
+        local title = Instance.new("TextLabel")
+        title.Size = UDim2.new(1, -20, 0, 35)
+        title.Position = UDim2.new(0, 10, 0, yPos)
+        title.BackgroundTransparency = 1
+        title.Text = "⚡ MAIN CONTROLS"
+        title.TextColor3 = colors.primary
+        title.TextScaled = true
+        title.Font = Enum.Font.GothamBold
+        title.TextXAlignment = Enum.TextXAlignment.Left
+        title.Parent = contentFrame
+        yPos = yPos + 40
+        
+        createToggle(contentFrame, "Auto Train", yPos, "autoTrain")
+        yPos = yPos + 60
+        createToggle(contentFrame, "Auto Collect", yPos, "autoCollect")
+        yPos = yPos + 60
+        createToggle(contentFrame, "Auto Sell", yPos, "autoSell")
+        yPos = yPos + 70
+        
+        local strengthLabel = Instance.new("TextLabel")
+        strengthLabel.Size = UDim2.new(1, -20, 0, 35)
+        strengthLabel.Position = UDim2.new(0, 10, 0, yPos)
+        strengthLabel.BackgroundTransparency = 1
+        strengthLabel.Text = "💪 STRENGTH: 0"
+        strengthLabel.TextColor3 = colors.text
+        strengthLabel.TextScaled = true
+        strengthLabel.Font = Enum.Font.GothamBold
+        strengthLabel.TextXAlignment = Enum.TextXAlignment.Left
+        strengthLabel.Parent = contentFrame
+        yPos = yPos + 40
+        
+        local coinsLabel = Instance.new("TextLabel")
+        coinsLabel.Size = UDim2.new(1, -20, 0, 35)
+        coinsLabel.Position = UDim2.new(0, 10, 0, yPos)
+        coinsLabel.BackgroundTransparency = 1
+        coinsLabel.Text = "🪙 COINS: 0"
+        coinsLabel.TextColor3 = colors.primary
+        coinsLabel.TextScaled = true
+        coinsLabel.Font = Enum.Font.GothamBold
+        coinsLabel.TextXAlignment = Enum.TextXAlignment.Left
+        coinsLabel.Parent = contentFrame
+        
+        contentFrame.CanvasSize = UDim2.new(0, 0, 0, yPos + 60)
+        
+    elseif currentTab == "Player" then
+        local title = Instance.new("TextLabel")
+        title.Size = UDim2.new(1, -20, 0, 35)
+        title.Position = UDim2.new(0, 10, 0, yPos)
+        title.BackgroundTransparency = 1
+        title.Text = "⚡ PLAYER SETTINGS"
+        title.TextColor3 = colors.primary
+        title.TextScaled = true
+        title.Font = Enum.Font.GothamBold
+        title.TextXAlignment = Enum.TextXAlignment.Left
+        title.Parent = contentFrame
+        yPos = yPos + 40
+        
+        -- Sliders simplificados para mobile
+        local wsLabel = Instance.new("TextLabel")
+        wsLabel.Size = UDim2.new(1, -20, 0, 30)
+        wsLabel.Position = UDim2.new(0, 10, 0, yPos)
+        wsLabel.BackgroundTransparency = 1
+        wsLabel.Text = "WalkSpeed: " .. settings.walkSpeed
+        wsLabel.TextColor3 = colors.text
+        wsLabel.TextScaled = true
+        wsLabel.Font = Enum.Font.Gotham
+        wsLabel.TextXAlignment = Enum.TextXAlignment.Left
+        wsLabel.Parent = contentFrame
+        yPos = yPos + 35
+        
+        createToggle(contentFrame, "Infinite Jump", yPos, "infiniteJump")
+        yPos = yPos + 60
+        
+        createButton(contentFrame, "RESET CHARACTER", yPos, colors.danger, function()
+            if player.Character then
+                player.Character:BreakJoints()
+            end
+        end)
+        
+        contentFrame.CanvasSize = UDim2.new(0, 0, 0, yPos + 60)
+        
+    elseif currentTab == "Pets" then
+        local title = Instance.new("TextLabel")
+        title.Size = UDim2.new(1, -20, 0, 35)
+        title.Position = UDim2.new(0, 10, 0, yPos)
+        title.BackgroundTransparency = 1
+        title.Text = "⚡ PET MANAGER"
+        title.TextColor3 = colors.primary
+        title.TextScaled = true
+        title.Font = Enum.Font.GothamBold
+        title.TextXAlignment = Enum.TextXAlignment.Left
+        title.Parent = contentFrame
+        yPos = yPos + 40
+        
+        createButton(contentFrame, "EQUIP BEST PETS", yPos, colors.success, function()
+            print("Equipando melhores pets...")
+        end)
+        yPos = yPos + 60
+        
+        createButton(contentFrame, "OPEN EGGS", yPos, colors.primary, function()
+            print("Abrindo " .. settings.eggsAmount .. " ovos...")
+        end)
+        yPos = yPos + 60
+        
+        createTextBox(contentFrame, "Eggs Amount", yPos, "eggsAmount")
+        
+        contentFrame.CanvasSize = UDim2.new(0, 0, 0, yPos + 80)
+        
+    elseif currentTab == "Teleport" then
+        local title = Instance.new("TextLabel")
+        title.Size = UDim2.new(1, -20, 0, 35)
+        title.Position = UDim2.new(0, 10, 0, yPos)
+        title.BackgroundTransparency = 1
+        title.Text = "⚡ TELEPORT"
+        title.TextColor3 = colors.primary
+        title.TextScaled = true
+        title.Font = Enum.Font.GothamBold
+        title.TextXAlignment = Enum.TextXAlignment.Left
+        title.Parent = contentFrame
+        yPos = yPos + 40
+        
+        createButton(contentFrame, "SPAWN", yPos, colors.surface, function()
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                player.Character.HumanoidRootPart.CFrame = CFrame.new(0, 10, 0)
+            end
+        end)
+        yPos = yPos + 60
+        
+        createButton(contentFrame, "TRAINING AREA", yPos, colors.primary, function()
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                player.Character.HumanoidRootPart.CFrame = CFrame.new(100, 10, 0)
+            end
+        end)
+        yPos = yPos + 60
+        
+        createButton(contentFrame, "SHOP", yPos, colors.success, function()
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                player.Character.HumanoidRootPart.CFrame = CFrame.new(200, 10, 0)
+            end
+        end)
+        yPos = yPos + 60
+        
+        createButton(contentFrame, "REBIRTH AREA", yPos, colors.danger, function()
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                player.Character.HumanoidRootPart.CFrame = CFrame.new(300, 10, 0)
+            end
+        end)
+        
+        contentFrame.CanvasSize = UDim2.new(0, 0, 0, yPos + 70)
+        
+    elseif currentTab == "Settings" then
+        local title = Instance.new("TextLabel")
+        title.Size = UDim2.new(1, -20, 0, 35)
+        title.Position = UDim2.new(0, 10, 0, yPos)
+        title.BackgroundTransparency = 1
+        title.Text = "⚡ SETTINGS"
+        title.TextColor3 = colors.primary
+        title.TextScaled = true
+        title.Font = Enum.Font.GothamBold
+        title.TextXAlignment = Enum.TextXAlignment.Left
+        title.Parent = contentFrame
+        yPos = yPos + 40
+        
+        createButton(contentFrame, "TOGGLE UI (F)", yPos, colors.primary, function()
+            hubVisible = not hubVisible
+            mainFrame.Visible = hubVisible
+        end)
+        yPos = yPos + 60
+        
+        createButton(contentFrame, "DESTROY HUB", yPos, colors.danger, function()
+            screenGui:Destroy()
+        end)
+        
+        contentFrame.CanvasSize = UDim2.new(0, 0, 0, yPos + 70)
+    end
+end
+
+-- Eventos
+closeBtn.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+minBtn.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+    wait(0.1)
+    mainFrame.Visible = true
+    -- No mobile, minimizar pode esconder completamente
+end)
+
+-- Tecla F (se houver teclado no mobile)
+UserInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.F then
+        hubVisible = not hubVisible
+        mainFrame.Visible = hubVisible
+    end
+end)
+
+-- Iniciar
+updateContent()
+
+-- Aviso
+print("✅ Muscle Hub Mobile carregado!")
+print("📱 Arraste a barra superior para mover")
+print("👆 Toque nos botões para ativar funções")
     Versão: 2.0
     Autor: Desenvolvimento Profissional
     Características: UI Moderna, Sistema de Abas, Auto Farm, Configurações Salvas
