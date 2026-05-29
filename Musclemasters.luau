@@ -90,7 +90,7 @@ task.spawn(function()
     for _, area in pairs({game.CoreGui, Player:FindFirstChild("PlayerGui")}) do
         if area then
             for _, v in pairs(area:GetDescendants()) do
-                if v:IsA("TextLabel") and (string.find(v.Text,"PrimeJelo") or string.find(v.Text,"Muscle")) then
+                if v:IsA("TextLabel") and (string.find(v.Text,"nexus hub") or string.find(v.Text,"Muscle")) then
                     if not v:FindFirstAncestorOfClass("ScrollingFrame") then
                         titleLabel = v break
                     end
