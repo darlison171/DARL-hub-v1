@@ -66,7 +66,7 @@ end
 -- ================= LIBRARY =================
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/GeloXOshiru/PrimeJelo-Hub/refs/heads/main/Image.png", true))()
 
-local window, windowFrame = library:AddWindow("primejelo On Top", {
+local window, windowFrame = library:AddWindow("Primejelo On Top", {
     title_bar = {
     Color3.fromRGB(0, 0, 0),
     Color3.fromRGB(180, 20, 20),
